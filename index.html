@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brief — Legal clarity, without the legal bill</title>
+<meta name="description" content="Brief is a multi-agent AI legal aid assistant that reviews contracts, checks compliance, answers legal questions, and finds precedent — in plain language.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EFEEE7;
+    --paper-raised:#F8F7F2;
+    --ink:#16202B;
+    --ink-soft:#525C66;
+    --ink-faint:#8B9198;
+    --navy:#1F3A5F;
+    --brass:#A9793C;
+    --brass-dark:#8C6530;
+    --stamp:#3F6C63;
+    --stamp-dark:#2C4E47;
+    --line:#DAD5C6;
+    --risk:#B3492E;
+    --shadow:0 1px 2px rgba(22,32,43,.06), 0 14px 30px -18px rgba(22,32,43,.28);
+    --serif:'Newsreader', serif;
+    --sans:'IBM Plex Sans', -apple-system, sans-serif;
+    --mono:'IBM Plex Mono', monospace;
+    --maxw:1140px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:16px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{
+    font-family:var(--serif);
+    font-weight:500;
+    line-height:1.1;
+    margin:0;
+    color:var(--ink);
+  }
+  p{margin:0;}
+  a{color:inherit;}
+  .mono{font-family:var(--mono); letter-spacing:.04em;}
+  .muted{color:var(--ink-soft);}
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 32px;}
+  ::selection{background:var(--brass); color:#fff;}
+  :focus-visible{outline:2px solid var(--stamp); outline-offset:3px;}
+
+  /* ---------- ribbon ---------- */
+  .ribbon{
+    background:var(--navy);
+    color:#EDE7D6;
+    font-family:var(--mono);
+    font-size:12.5px;
+    letter-spacing:.03em;
+    text-align:center;
+    padding:8px 20px;
+  }
+  .ribbon a{ text-decoration:underline; text-underline-offset:2px; color:#fff; }
+
+  /* ---------- nav ---------- */
+  .nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(239,238,231,.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav__row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 32px;
+  }
+  .brand{display:flex; align-items:center; gap:10px; text-decoration:none;}
+  .brand__mark{width:26px; height:26px; flex-shrink:0;}
+  .brand__word{font-family:var(--serif); font-size:20px; font-weight:600; color:var(--ink);}
+  .nav__links{display:flex; gap:28px; list-style:none; margin:0; padding:0;}
+  .nav__links a{
+    text-decoration:none; font-size:14.5px; color:var(--ink-soft);
+    border-bottom:1px solid transparent; padding-bottom:2px;
+    transition:color .15s, border-color .15s;
+  }
+  .nav__links a:hover{color:var(--ink); border-color:var(--brass);}
+  .nav__toggle{display:none; background:none; border:1px solid var(--line); border-radius:3px; padding:6px 10px; font-family:var(--mono); font-size:13px;}
+
+  @media (max-width:760px){
+    .nav__links{
+      position:absolute; top:100%; left:0; right:0;
+      flex-direction:column; gap:0;
+      background:var(--paper-raised);
+      border-bottom:1px solid var(--line);
+      max-height:0; overflow:hidden;
+      transition:max-height .2s ease;
+    }
+    .nav__links.open{max-height:260px;}
+    .nav__links a{ padding:14px 32px; border-bottom:1px solid var(--line); width:100%; }
+    .nav__toggle{display:inline-block;}
+  }
+
+  /* ---------- hero ---------- */
+  .hero{ padding:88px 0 96px; }
+  .hero__grid{
+    display:grid; grid-template-columns:1.05fr .95fr; gap:64px; align-items:center;
+  }
+  .eyebrow{
+    font-family:var(--mono); font-size:12.5px; letter-spacing:.08em;
+    color:var(--stamp-dark); text-transform:uppercase; margin-bottom:18px; display:block;
+  }
+  .hero h1{ font-size:clamp(34px, 4.4vw, 52px); letter-spacing:-.01em; }
+  .hero h1 em{ font-style:italic; color:var(--brass-dark); }
+  .hero p.lede{ margin-top:20px; font-size:17.5px; color:var(--ink-soft); max-width:46ch; }
+  .hero__cta{ display:flex; gap:14px; margin-top:32px; flex-wrap:wrap; }
+  .btn{
+    font-family:var(--sans); font-size:14.5px; font-weight:500;
+    padding:13px 22px; border-radius:3px; cursor:pointer; text-decoration:none;
+    display:inline-flex; align-items:center; gap:8px; border:1px solid transparent;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .btn:hover{ transform:translateY(-1px); }
+  .btn--primary{ background:var(--navy); color:#fff; }
+  .btn--primary:hover{ box-shadow:0 8px 18px -8px rgba(31,58,95,.55); }
+  .btn--ghost{ background:transparent; border-color:var(--ink); color:var(--ink); }
+  .stack-note{ margin-top:22px; font-size:12px; color:var(--ink-faint); }
+
+  /* signature: annotated clause card */
+  .clause-card{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:4px;
+    box-shadow:var(--shadow);
+    padding:26px 26px 22px;
+    position:relative;
+  }
+  .clause-card__head{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:16px; font-size:11.5px;
+  }
+  .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.05em;
+    padding:4px 8px; border-radius:2px; background:var(--stamp); color:#fff;
+  }
+  .clause-card__text{
+    font-family:var(--serif); font-size:16.5px; line-height:1.7; color:var(--ink);
+  }
+  mark.flag{
+    background:transparent; color:var(--ink);
+    box-shadow:inset 0 -0.32em 0 rgba(179,73,46,.18);
+    border-bottom:1.5px solid var(--risk);
+  }
+  .clause-card__note{
+    margin-top:18px; padding-top:16px; border-top:1px dashed var(--line);
+    display:flex; gap:10px; font-size:13.5px; color:var(--ink-soft);
+  }
+  .note__icon{ color:var(--risk); flex-shrink:0; }
+
+  @media (max-width:900px){
+    .hero__grid{ grid-template-columns:1fr; }
+  }
+
+  /* ---------- section shells ---------- */
+  section{ padding:80px 0; }
+  .section-head{ max-width:640px; margin-bottom:48px; }
+  .section-head h2{ font-size:clamp(26px,3vw,34px); }
+  .section-head p{ margin-top:14px; color:var(--ink-soft); font-size:15.5px; }
+
+  .reveal{ opacity:0; transform:translateY(14px); transition:opacity .5s ease, transform .5s ease; }
+  .reveal.in{ opacity:1; transform:none; }
+
+  /* ---------- capabilities ---------- */
+  .cap-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); }
+  .cap-card{ background:var(--paper-raised); padding:28px 24px; }
+  .cap-card__num{ font-family:var(--mono); font-size:12px; color:var(--brass-dark); }
+  .cap-card h3{ font-size:18px; margin:14px 0 10px; }
+  .cap-card p{ font-size:14px; color:var(--ink-soft); }
+  @media (max-width:900px){ .cap-grid{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:600px){ .cap-grid{ grid-template-columns:1fr; } }
+
+  /* ---------- process ---------- */
+  .process{ background:var(--paper-raised); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .process-steps{ display:grid; grid-template-columns:repeat(4,1fr); gap:28px; position:relative; }
+  .process-steps::before{
+    content:""; position:absolute; top:11px; left:4%; right:4%; height:1px; background:var(--line);
+  }
+  .step{ position:relative; }
+  .step__num{
+    font-family:var(--mono); font-size:12px; color:var(--navy);
+    background:var(--paper-raised); display:inline-block; padding-right:10px; position:relative; z-index:1;
+  }
+  .step h3{ font-size:16.5px; margin:14px 0 8px; }
+  .step p{ font-size:13.5px; color:var(--ink-soft); }
+  @media (max-width:760px){
+    .process-steps{ grid-template-columns:1fr; gap:22px; }
+    .process-steps::before{ display:none; }
+  }
+
+  /* ---------- team ---------- */
+  .team-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); }
+  .agent-card{ background:var(--paper-raised); padding:24px 22px 22px; display:flex; flex-direction:column; gap:12px; }
+  .agent-card--lead{ grid-column:1/-1; display:grid; grid-template-columns:1.3fr 1fr; gap:24px; padding:28px 26px; }
+  .role-tab{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase;
+    color:#fff; padding:5px 9px; border-radius:2px; width:fit-content;
+  }
+  .role-tab--orchestrator{ background:var(--navy); }
+  .role-tab--contract{ background:var(--brass-dark); }
+  .role-tab--compliance{ background:var(--stamp); }
+  .role-tab--qa{ background:#6E5A46; }
+  .role-tab--case{ background:#495B6B; }
+  .agent-card h3{ font-size:17.5px; }
+  .agent-card p{ font-size:13.5px; color:var(--ink-soft); }
+  .tool-row{ display:flex; flex-wrap:wrap; gap:6px; margin-top:auto; padding-top:10px; }
+  .tool-chip{
+    font-family:var(--mono); font-size:11px; color:var(--ink-soft);
+    border:1px solid var(--line); border-radius:2px; padding:3px 7px;
+  }
+  .collab-list{ font-size:13px; color:var(--ink-soft); }
+  .collab-list ul{ margin:8px 0 0; padding-left:18px; }
+  @media (max-width:900px){ .team-grid{ grid-template-columns:1fr 1fr; } .agent-card--lead{ grid-template-columns:1fr; } }
+  @media (max-width:600px){ .team-grid{ grid-template-columns:1fr; } }
+
+  /* ---------- try it ---------- */
+  .try-grid{ display:grid; grid-template-columns:1fr 1fr; gap:32px; }
+  @media (max-width:900px){ .try-grid{ grid-template-columns:1fr; } }
+
+  .dropzone{
+    background:var(--paper-raised); border:1.5px dashed var(--line); border-radius:4px;
+    padding:36px 24px; text-align:center; cursor:pointer; transition:border-color .15s, background .15s;
+  }
+  .dropzone:hover, .dropzone.drag{ border-color:var(--stamp); background:#F2F1EA; }
+  .dropzone__title{ font-size:15px; font-weight:500; }
+  .dropzone__hint{ margin-top:8px; font-size:11.5px; color:var(--ink-faint); }
+  .dz-result{ margin-top:16px; background:var(--paper-raised); border:1px solid var(--line); border-radius:4px; padding:18px 20px; font-size:13.5px; }
+  .dz-result .fname{ font-family:var(--mono); font-size:12.5px; color:var(--navy); }
+  .dz-result .flagline{ display:flex; gap:8px; margin-top:12px; padding-top:12px; border-top:1px dashed var(--line); color:var(--ink-soft); }
+  .dz-result .flagline .note__icon{ color:var(--risk); }
+  .typing{ display:inline-flex; gap:3px; }
+  .typing span{ width:5px; height:5px; border-radius:50%; background:var(--ink-faint); animation:blink 1.2s infinite; }
+  .typing span:nth-child(2){ animation-delay:.2s; }
+  .typing span:nth-child(3){ animation-delay:.4s; }
+  @keyframes blink{ 0%,80%,100%{opacity:.25;} 40%{opacity:1;} }
+
+  .chat{ background:var(--paper-raised); border:1px solid var(--line); border-radius:4px; display:flex; flex-direction:column; height:100%; min-height:380px; }
+  .chat__head{ display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-bottom:1px solid var(--line); font-size:12px; }
+  .chat__status{ color:var(--stamp); }
+  .chat__log{ flex:1; overflow-y:auto; padding:18px; display:flex; flex-direction:column; gap:12px; max-height:340px; }
+  .msg{ max-width:85%; font-size:14px; padding:10px 13px; border-radius:4px; line-height:1.5; }
+  .msg--agent{ background:#fff; border:1px solid var(--line); align-self:flex-start; }
+  .msg--user{ background:var(--navy); color:#fff; align-self:flex-end; }
+  .msg__tag{ display:block; font-family:var(--mono); font-size:10px; color:var(--stamp-dark); margin-bottom:4px; letter-spacing:.04em; }
+  .msg--user .msg__tag{ color:#CFE0E0; }
+  .chat__form{ display:flex; gap:8px; padding:14px; border-top:1px solid var(--line); }
+  .chat__form input{
+    flex:1; border:1px solid var(--line); border-radius:3px; padding:10px 12px;
+    font-family:var(--sans); font-size:14px; background:#fff;
+  }
+  .chat__form button{
+    background:var(--navy); color:#fff; border:none; border-radius:3px; padding:0 18px;
+    font-family:var(--sans); font-size:14px; cursor:pointer;
+  }
+  .chat__disclaimer{ font-size:11px; color:var(--ink-faint); text-align:center; padding:0 14px 14px; }
+
+  /* ---------- footer ---------- */
+  footer{ background:var(--navy); color:#D9E0E6; padding:56px 0 32px; }
+  .footer-grid{ display:grid; grid-template-columns:1.4fr 1fr; gap:48px; }
+  footer h3{ color:#fff; font-size:18px; margin-bottom:12px; }
+  footer p{ font-size:13.5px; color:#B9C4CC; line-height:1.7; }
+  .footer-links{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:9px; font-size:13.5px; }
+  .footer-links a{ text-decoration:none; color:#B9C4CC; }
+  .footer-links a:hover{ color:#fff; }
+  .footer-bottom{
+    margin-top:40px; padding-top:20px; border-top:1px solid rgba(255,255,255,.14);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
+    font-family:var(--mono); font-size:11.5px; color:#8FA0AB;
+  }
+  @media (max-width:760px){ .footer-grid{ grid-template-columns:1fr; } }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+    .reveal{ opacity:1; transform:none; }
+  }
+</style>
+<script>
+  window.wxOConfiguration = {
+    orchestrationID: "7a792622b33c4c1a97b5ce9e634dc869_4edb6713-28a4-4e5d-a8d0-82685f7207b8",
+    hostURL: "https://au-syd.watson-orchestrate.cloud.ibm.com",
+    rootElementID: "root",
+    deploymentPlatform: "ibmcloud",
+    crn: "crn:v1:bluemix:public:watsonx-orchestrate:au-syd:a/7a792622b33c4c1a97b5ce9e634dc869:4edb6713-28a4-4e5d-a8d0-82685f7207b8::",
+    chatOptions: {
+        agentId: "265c7285-a6ec-4bb9-a1ca-f9abbab22736", 
+    }
+  };
+  setTimeout(function () {
+    const script = document.createElement('script');
+    script.src = `${window.wxOConfiguration.hostURL}/wxochat/wxoLoader.js?embed=true`;
+    script.addEventListener('load', function () {
+        wxoLoader.init();
+    });
+    document.head.appendChild(script);
+  }, 0);                     
+</script>
+</head>
+<body>
+
+  <div class="ribbon">General legal information — not legal advice. <a href="#disclaimer">Read the full disclaimer</a></div>
+
+  <header class="nav">
+    <div class="nav__row wrap">
+      <a href="#" class="brand">
+        <svg class="brand__mark" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="13" cy="13" r="11.5" stroke="#A9793C" stroke-width="1.4"/>
+          <circle cx="13" cy="13" r="3.4" fill="#A9793C"/>
+        </svg>
+        <span class="brand__word">Brief</span>
+      </a>
+      <button class="nav__toggle" id="navToggle" aria-label="Toggle menu">Menu</button>
+      <ul class="nav__links" id="navLinks">
+        <li><a href="#capabilities">How it helps</a></li>
+        <li><a href="#team">The team</a></li>
+        <li><a href="#try">Try it</a></li>
+        <li><a href="#disclaimer">Disclaimer</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="wrap hero__grid">
+        <div>
+          <span class="eyebrow">Multi-agent legal aid, built on IBM watsonx</span>
+          <h1>Legal clarity,<br>without the <em>legal bill.</em></h1>
+          <p class="lede">Brief reads your contracts, checks the rules that apply to you, and answers your questions in plain language — grounded in real law, not guesswork.</p>
+          <div class="hero__cta">
+            <a href="#try" class="btn btn--primary">Upload a document</a>
+            <a href="#try" class="btn btn--ghost">Ask a question</a>
+          </div>
+          <p class="stack-note mono">POWERED BY IBM WATSONX ORCHESTRATE · LANGFLOW · RAG</p>
+        </div>
+
+        <div class="clause-card reveal">
+          <div class="clause-card__head">
+            <span class="tag">CONTRACT REVIEWER AGENT</span>
+            <span class="mono muted">clause 9.2</span>
+          </div>
+          <p class="clause-card__text">9.2 <strong>Auto-Renewal.</strong> This Agreement shall automatically renew for successive <mark class="flag">one (1) year terms</mark> unless either party provides written notice of non-renewal at least <mark class="flag">ninety (90) days</mark> prior to the end of the then-current term…</p>
+          <div class="clause-card__note">
+            <span class="note__icon">⚑</span>
+            <span>Renewal risk — most service agreements only require 30 days' notice. This clause locks you in three times longer, and the window is easy to miss.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CAPABILITIES -->
+    <section id="capabilities">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <h2>What's under the hood</h2>
+          <p>Four capabilities, working together, so you get a grounded answer instead of a plausible-sounding guess.</p>
+        </div>
+        <div class="cap-grid reveal">
+          <div class="cap-card">
+            <span class="cap-card__num">RAG</span>
+            <h3>Legal retrieval</h3>
+            <p>Every answer is grounded in real statutes, regulations, and precedent — retrieved live, not recalled from memory.</p>
+          </div>
+          <div class="cap-card">
+            <span class="cap-card__num">PARSE</span>
+            <h3>Document analysis</h3>
+            <p>Upload a contract, notice, or policy. Brief highlights the clauses that matter and the risks they carry.</p>
+          </div>
+          <div class="cap-card">
+            <span class="cap-card__num">TALK</span>
+            <h3>Conversational assistant</h3>
+            <p>Ask questions the way you'd ask a friend. Brief answers in plain language, not legal jargon.</p>
+          </div>
+          <div class="cap-card">
+            <span class="cap-card__num">AGENTS</span>
+            <h3>Specialist routing</h3>
+            <p>Behind the scenes, four specialist agents — reviewer, compliance checker, researcher, and Q&amp;A — each handle what they do best.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROCESS -->
+    <section class="process">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <h2>How a question becomes an answer</h2>
+        </div>
+        <div class="process-steps reveal">
+          <div class="step">
+            <span class="step__num">01</span>
+            <h3>Upload or ask</h3>
+            <p>Bring a document, or type a question in your own words.</p>
+          </div>
+          <div class="step">
+            <span class="step__num">02</span>
+            <h3>Route</h3>
+            <p>The orchestrator reads your intent and hands it to the right specialist.</p>
+          </div>
+          <div class="step">
+            <span class="step__num">03</span>
+            <h3>Retrieve &amp; analyze</h3>
+            <p>The specialist grounds its answer in your document and the relevant law.</p>
+          </div>
+          <div class="step">
+            <span class="step__num">04</span>
+            <h3>Respond</h3>
+            <p>A plain-language answer, with sources — and a reminder of what it isn't.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TEAM -->
+    <section id="team">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <h2>Your case team</h2>
+          <p>One agent leads the conversation. Four specialists do the actual legal work.</p>
+        </div>
+        <div class="team-grid reveal">
+
+          <div class="agent-card agent-card--lead">
+            <div>
+              <span class="role-tab role-tab--orchestrator">Orchestrator</span>
+              <h3 style="margin-top:12px;">Orchestrator Agent</h3>
+              <p>The user-facing entry point. Interprets intent, keeps the tone empathetic and jargon-free, and delegates to the right specialist rather than answering directly. Always appends a disclaimer that this isn't a substitute for a licensed lawyer.</p>
+            </div>
+            <div class="collab-list">
+              <strong>Collaborators</strong>
+              <ul>
+                <li>Contract Reviewer Agent</li>
+                <li>Compliance Checker Agent</li>
+                <li>Q&amp;A RAG Agent</li>
+                <li>Case Research Agent</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="agent-card">
+            <span class="role-tab role-tab--contract">Specialist</span>
+            <h3>Contract Reviewer</h3>
+            <p>Flags risky clauses, missing protections, and inconsistencies in uploaded contracts.</p>
+            <div class="tool-row">
+              <span class="tool-chip">clause_classifier</span>
+              <span class="tool-chip">risk_scorer</span>
+            </div>
+          </div>
+
+          <div class="agent-card">
+            <span class="role-tab role-tab--compliance">Specialist</span>
+            <h3>Compliance Checker</h3>
+            <p>Verifies whether a document or practice meets specific laws and regulations.</p>
+            <div class="tool-row">
+              <span class="tool-chip">regulation_rag</span>
+              <span class="tool-chip">gap_identifier</span>
+            </div>
+          </div>
+
+          <div class="agent-card">
+            <span class="role-tab role-tab--qa">Specialist</span>
+            <h3>Q&amp;A RAG</h3>
+            <p>Default agent for general legal questions, answered in plain language.</p>
+            <div class="tool-row">
+              <span class="tool-chip">legal_corpus_retriever</span>
+              <span class="tool-chip">explain_simplify</span>
+            </div>
+          </div>
+
+          <div class="agent-card">
+            <span class="role-tab role-tab--case">Specialist</span>
+            <h3>Case Research</h3>
+            <p>Finds and summarizes relevant precedents and past judgments.</p>
+            <div class="tool-row">
+              <span class="tool-chip">case_law_retriever</span>
+              <span class="tool-chip">precedent_summarizer</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- TRY IT -->
+    <section id="try">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <h2>See it work</h2>
+          <p>A front-end preview of the two entry points — no files are actually uploaded or stored here.</p>
+        </div>
+        <div class="try-grid reveal">
+
+          <div>
+            <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload a document to preview analysis">
+              <input type="file" id="fileInput" hidden accept=".pdf,.doc,.docx,.txt">
+              <p class="dropzone__title">Drop a contract here, or click to choose a file</p>
+              <p class="dropzone__hint mono">PDF, DOC, DOCX, or TXT — demo only, nothing leaves your browser.</p>
+            </div>
+            <div class="dz-result" id="dzResult" hidden></div>
+          </div>
+
+          <div class="chat">
+            <div class="chat__head">
+              <span class="mono">BRIEF ASSISTANT</span>
+              <span class="chat__status">● demo mode</span>
+            </div>
+            <div class="chat__log" id="chatLog" aria-live="polite"></div>
+            <form class="chat__form" id="chatForm">
+              <input type="text" id="chatInput" placeholder="Ask about a contract, compliance, or a past case…" autocomplete="off">
+              <button type="submit">Send</button>
+            </form>
+            <p class="chat__disclaimer">Brief gives legal information, not legal advice.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="disclaimer">
+    <div class="wrap footer-grid">
+      <div>
+        <h3>Not a substitute for a lawyer</h3>
+        <p>Brief provides general legal information, not legal advice. Nothing in this application creates an attorney-client relationship, and no response should be treated as a substitute for consultation with a licensed lawyer — particularly for decisions specific to your situation, contract, or jurisdiction. For binding or high-stakes matters, please consult a qualified attorney.</p>
+      </div>
+      <div>
+        <h3>Project</h3>
+        <ul class="footer-links">
+          <li><a href="#capabilities">How it helps</a></li>
+          <li><a href="#team">The case team</a></li>
+          <li><a href="#try">Try the demo</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="wrap footer-bottom">
+      <span>© 2026 BRIEF — A STUDENT PROTOTYPE, NOT A LAW FIRM</span>
+      <span>BUILT ON IBM WATSONX ORCHESTRATE &amp; LANGFLOW</span>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile nav toggle
+    const navToggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    navToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
+    navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
+
+    // Scroll reveal
+    const revealEls = document.querySelectorAll('.reveal');
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+      }, { threshold: 0.15 });
+      revealEls.forEach(el => io.observe(el));
+    } else {
+      revealEls.forEach(el => el.classList.add('in'));
+    }
+
+    // ---- Dropzone demo ----
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const dzResult = document.getElementById('dzResult');
+
+    function handleFile(name){
+      dzResult.hidden = false;
+      dzResult.innerHTML = `<span class="fname">${name}</span> — <span class="typing"><span></span><span></span><span></span></span> analyzing…`;
+      setTimeout(() => {
+        dzResult.innerHTML = `
+          <span class="fname">${name}</span> — 3 clauses reviewed, 1 flagged
+          <div class="flagline">
+            <span class="note__icon">⚑</span>
+            <span>Clause 9.2 (Auto-Renewal): renewal notice window is longer than typical — see hero example above for how this is flagged.</span>
+          </div>`;
+      }, 1100);
+    }
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }});
+    fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0].name); });
+    ['dragover','dragleave','drop'].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropzone.classList.toggle('drag', evt === 'dragover');
+        if (evt === 'drop' && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0].name);
+      });
+    });
+
+    // ---- Chat demo ----
+    const chatLog = document.getElementById('chatLog');
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+
+    function addMsg(text, who, tag){
+      const div = document.createElement('div');
+      div.className = 'msg ' + (who === 'user' ? 'msg--user' : 'msg--agent');
+      div.innerHTML = (tag ? `<span class="msg__tag">${tag}</span>` : '') + text;
+      chatLog.appendChild(div);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function routeReply(q){
+      const t = q.toLowerCase();
+      if (/(contract|clause|review|agreement)/.test(t)) {
+        return { tag: 'CONTRACT REVIEWER AGENT', text: 'Upload the contract above and I\'ll flag risky clauses, like unusual renewal or termination terms, with a plain-language note on why each one matters.' };
+      }
+      if (/(compl(y|iance)|regulation|law require|licen[sc]e)/.test(t)) {
+        return { tag: 'COMPLIANCE CHECKER AGENT', text: 'Tell me the regulation or jurisdiction you\'re checking against, and I\'ll build a pass/fail checklist against the relevant rules.' };
+      }
+      if (/(case|precedent|ruling|court|judgment|judgement)/.test(t)) {
+        return { tag: 'CASE RESEARCH AGENT', text: 'I can search past judgments related to your situation and summarize the facts, holding, and relevance. What\'s the scenario?' };
+      }
+      return { tag: 'Q&A RAG AGENT', text: 'Good question — let me ground that in the relevant statute rather than guessing. Could you tell me your jurisdiction so I search the right corpus?' };
+    }
+
+    let greeted = false;
+    function greetOnce(){
+      if (greeted) return;
+      greeted = true;
+      addMsg('Hi — I\'m Brief. I can review a contract, check compliance, look up case law, or just answer a legal question in plain language. This is general legal information, not legal advice, and doesn\'t replace a licensed lawyer.', 'agent', 'ORCHESTRATOR AGENT');
+    }
+
+    chatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const val = chatInput.value.trim();
+      if (!val) return;
+      greetOnce();
+      addMsg(val, 'user');
+      chatInput.value = '';
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'msg msg--agent';
+      typingDiv.innerHTML = '<span class="typing"><span></span><span></span><span></span></span>';
+      chatLog.appendChild(typingDiv);
+      chatLog.scrollTop = chatLog.scrollHeight;
+      setTimeout(() => {
+        typingDiv.remove();
+        const r = routeReply(val);
+        addMsg(r.text, 'agent', r.tag);
+      }, 700);
+    });
+
+    chatInput.addEventListener('focus', greetOnce);
+  </script>
+</body>
+</html>
