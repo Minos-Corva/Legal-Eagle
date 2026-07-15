@@ -286,16 +286,17 @@
     .reveal{ opacity:1; transform:none; }
   }
 </style>
+
 <script>
   window.wxOConfiguration = {
-    orchestrationID: "7a792622b33c4c1a97b5ce9e634dc869_4edb6713-28a4-4e5d-a8d0-82685f7207b8",
+    orchestrationID: "7a792622b33c4c1a97b5ce9e634dc869_1bd22012-9667-4d16-867d-b0afee021bc8",
     hostURL: "https://au-syd.watson-orchestrate.cloud.ibm.com",
     rootElementID: "root",
     deploymentPlatform: "ibmcloud",
-    crn: "crn:v1:bluemix:public:watsonx-orchestrate:au-syd:a/7a792622b33c4c1a97b5ce9e634dc869:4edb6713-28a4-4e5d-a8d0-82685f7207b8::",
+    crn: "crn:v1:bluemix:public:watsonx-orchestrate:au-syd:a/7a792622b33c4c1a97b5ce9e634dc869:1bd22012-9667-4d16-867d-b0afee021bc8::",
     chatOptions: {
-        agentId: "265c7285-a6ec-4bb9-a1ca-f9abbab22736", 
-        agentEnvironmentId: "38295eb1-d47f-4d46-8626-5515d59fba9f",
+        agentId: "be0db848-e912-4c8f-a562-db5c1afa4303",
+        agentEnvironmentId: "784afd0f-8dda-483d-90bb-9acc5735aae1",
     }
   };
   setTimeout(function () {
@@ -305,7 +306,7 @@
         wxoLoader.init();
     });
     document.head.appendChild(script);
-  }, 0);                     
+  }, 0);
 </script>
 </head>
 <body>
@@ -497,34 +498,10 @@
     <section id="try">
       <div class="wrap">
         <div class="section-head reveal">
-          <h2>See it work</h2>
-          <p>A front-end preview of the two entry points — no files are actually uploaded or stored here.</p>
+          <h2>Talk to Brief</h2>
+          <p>Ask a legal question, upload a contract, or check compliance — Brief's AI agents are live below.</p>
         </div>
-        <div class="try-grid reveal">
-
-          <div>
-            <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload a document to preview analysis">
-              <input type="file" id="fileInput" hidden accept=".pdf,.doc,.docx,.txt">
-              <p class="dropzone__title">Drop a contract here, or click to choose a file</p>
-              <p class="dropzone__hint mono">PDF, DOC, DOCX, or TXT — demo only, nothing leaves your browser.</p>
-            </div>
-            <div class="dz-result" id="dzResult" hidden></div>
-          </div>
-
-          <div class="chat">
-            <div class="chat__head">
-              <span class="mono">BRIEF ASSISTANT</span>
-              <span class="chat__status">● demo mode</span>
-            </div>
-            <div class="chat__log" id="chatLog" aria-live="polite"></div>
-            <form class="chat__form" id="chatForm">
-              <input type="text" id="chatInput" placeholder="Ask about a contract, compliance, or a past case…" autocomplete="off">
-              <button type="submit">Send</button>
-            </form>
-            <p class="chat__disclaimer">Brief gives legal information, not legal advice.</p>
-          </div>
-
-        </div>
+        <div id="root"></div>
       </div>
     </section>
   </main>
@@ -597,60 +574,6 @@
       });
     });
 
-    // ---- Chat demo ----
-    const chatLog = document.getElementById('chatLog');
-    const chatForm = document.getElementById('chatForm');
-    const chatInput = document.getElementById('chatInput');
-
-    function addMsg(text, who, tag){
-      const div = document.createElement('div');
-      div.className = 'msg ' + (who === 'user' ? 'msg--user' : 'msg--agent');
-      div.innerHTML = (tag ? `<span class="msg__tag">${tag}</span>` : '') + text;
-      chatLog.appendChild(div);
-      chatLog.scrollTop = chatLog.scrollHeight;
-    }
-
-    function routeReply(q){
-      const t = q.toLowerCase();
-      if (/(contract|clause|review|agreement)/.test(t)) {
-        return { tag: 'CONTRACT REVIEWER AGENT', text: 'Upload the contract above and I\'ll flag risky clauses, like unusual renewal or termination terms, with a plain-language note on why each one matters.' };
-      }
-      if (/(compl(y|iance)|regulation|law require|licen[sc]e)/.test(t)) {
-        return { tag: 'COMPLIANCE CHECKER AGENT', text: 'Tell me the regulation or jurisdiction you\'re checking against, and I\'ll build a pass/fail checklist against the relevant rules.' };
-      }
-      if (/(case|precedent|ruling|court|judgment|judgement)/.test(t)) {
-        return { tag: 'CASE RESEARCH AGENT', text: 'I can search past judgments related to your situation and summarize the facts, holding, and relevance. What\'s the scenario?' };
-      }
-      return { tag: 'Q&A RAG AGENT', text: 'Good question — let me ground that in the relevant statute rather than guessing. Could you tell me your jurisdiction so I search the right corpus?' };
-    }
-
-    let greeted = false;
-    function greetOnce(){
-      if (greeted) return;
-      greeted = true;
-      addMsg('Hi — I\'m Brief. I can review a contract, check compliance, look up case law, or just answer a legal question in plain language. This is general legal information, not legal advice, and doesn\'t replace a licensed lawyer.', 'agent', 'ORCHESTRATOR AGENT');
-    }
-
-    chatForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const val = chatInput.value.trim();
-      if (!val) return;
-      greetOnce();
-      addMsg(val, 'user');
-      chatInput.value = '';
-      const typingDiv = document.createElement('div');
-      typingDiv.className = 'msg msg--agent';
-      typingDiv.innerHTML = '<span class="typing"><span></span><span></span><span></span></span>';
-      chatLog.appendChild(typingDiv);
-      chatLog.scrollTop = chatLog.scrollHeight;
-      setTimeout(() => {
-        typingDiv.remove();
-        const r = routeReply(val);
-        addMsg(r.text, 'agent', r.tag);
-      }, 700);
-    });
-
-    chatInput.addEventListener('focus', greetOnce);
   </script>
 </body>
 </html>
